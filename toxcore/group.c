@@ -804,6 +804,38 @@ static void need_send_peers(Group_c *g)
     }
 }
 
+static void init_group_peer(Group_Peer* p, const uint8_t *real_pk, const uint8_t *temp_pk, int peer_gid)
+{
+    /* Group_Peer constructor */
+
+    p->lossy = nullptr;
+    p->object = nullptr;
+    p->nick = nullptr;
+    p->nick_len = 0;
+    p->keep_connection = 0;
+    p->nick_changed = 0;
+    p->title_changed = 0;
+    p->auto_join = 0;
+    p->need_send_peers = 0;
+    p->connected = 0;
+
+    /* set undefined */
+    p->friendcon_id = -1;
+
+    id_copy(p->real_pk, real_pk);
+    id_copy(p->temp_pk, temp_pk);
+
+    if (peer_gid >= 0) {
+        p->gid = peer_gid;
+    } else {
+        p->gid = -1;
+    }
+
+    // invalid by default
+    p->group_number = INVALID_GROUP_NUMBER;
+    p->last_recv = unix_time();
+}
+
 static int64_t addpeer(Group_c *g, int32_t groupnumber, const uint8_t *real_pk, const uint8_t *temp_pk, int peer_gid)
 {
     if (peer_gid >= 0) {
@@ -845,30 +877,19 @@ static int64_t addpeer(Group_c *g, int32_t groupnumber, const uint8_t *real_pk, 
     }
 
     g->peers = new_peers;
-    new_peers = new_peers + g->numpeers;
+
+    Group_Peer* new_peer = &new_peers[g->numpeers];
     ++g->numpeers;
 
     /* Group_Peer constructor */
-
-    memset(new_peers, 0, sizeof(Group_Peer));
-
-    /* set undefined */
-    new_peers->friendcon_id = -1;
+    init_group_peer(new_peer, real_pk, temp_pk, peer_gid);
 
     /* set undefined for other */
-    new_peers->group_number = id_equal(g->real_pk, real_pk) ? (uint16_t)groupnumber : INVALID_GROUP_NUMBER;
-
-    id_copy(new_peers->real_pk, real_pk);
-    id_copy(new_peers->temp_pk, temp_pk);
+    new_peer->group_number = id_equal(g->real_pk, real_pk) ? (uint16_t)groupnumber : INVALID_GROUP_NUMBER;
 
     if (peer_gid >= 0) {
         need_send_peers(g);
-        new_peers->gid = peer_gid;
-    } else {
-        new_peers->gid = -1;
     }
-
-    new_peers->last_recv = unix_time();
 
     g->dirty_list = true;
 
@@ -1274,6 +1295,10 @@ int group_peername(const Group_Chats *g_c, int groupnumber, int peer_index, uint
     Group_Peer *peer = &g->peers[g->peers_list[peer_index]];
 
     peer->nick_changed = false;
+
+    if (peer->nick == nullptr || peer->nick_len == 0) {
+        return 0;
+    }
 
     memcpy(name, peer->nick, peer->nick_len);
     return peer->nick_len;
