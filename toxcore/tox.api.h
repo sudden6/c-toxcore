@@ -498,9 +498,6 @@ static class options {
        * (255 chars + 1 NUL byte).
        *
        * This member is ignored (it can be NULL) if proxy_type is ${PROXY_TYPE.NONE}.
-       *
-       * The data pointed at by this member is owned by the user, so must
-       * outlive the options object.
        */
       string host;
 
@@ -558,11 +555,8 @@ static class options {
 
       /**
        * The savedata.
-       *
-       * The data pointed at by this member is owned by the user, so must
-       * outlive the options object.
        */
-      const uint8_t[length] data;
+      uint8_t[length] data;
 
       /**
        * The length of the savedata.

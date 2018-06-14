@@ -553,9 +553,6 @@ struct Tox_Options {
      * (255 chars + 1 NUL byte).
      *
      * This member is ignored (it can be NULL) if proxy_type is TOX_PROXY_TYPE_NONE.
-     *
-     * The data pointed at by this member is owned by the user, so must
-     * outlive the options object.
      */
     const char *proxy_host;
 
@@ -618,11 +615,8 @@ struct Tox_Options {
 
     /**
      * The savedata.
-     *
-     * The data pointed at by this member is owned by the user, so must
-     * outlive the options object.
      */
-    const uint8_t *savedata_data;
+    uint8_t *savedata_data;
 
 
     /**
@@ -689,9 +683,9 @@ TOX_SAVEDATA_TYPE tox_options_get_savedata_type(const struct Tox_Options *option
 
 void tox_options_set_savedata_type(struct Tox_Options *options, TOX_SAVEDATA_TYPE type);
 
-const uint8_t *tox_options_get_savedata_data(const struct Tox_Options *options);
+uint8_t *tox_options_get_savedata_data(const struct Tox_Options *options);
 
-void tox_options_set_savedata_data(struct Tox_Options *options, const uint8_t *data, size_t length);
+void tox_options_set_savedata_data(struct Tox_Options *options, uint8_t *data, size_t length);
 
 size_t tox_options_get_savedata_length(const struct Tox_Options *options);
 
